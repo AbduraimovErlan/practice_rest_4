@@ -2,22 +2,63 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from dfr.models import Snippet
-from dfr.serializers import SnippetSerializer
+from dfr.serializers import SnippetSerializer, UserSerializer
 from django.http import Http404
 from rest_framework.views import APIView
 from rest_framework import mixins
 from rest_framework import generics
+from rest_framework import permissions
+from pygments.lexers import get_lexer_by_name
+from pygments.formatters.html import HtmlFormatter
+from pygments import highlight
+from django.contrib.auth.models import User
+from dfr.permissions import IsOwnerOrReadOnly
+
+class UserList(generics.ListAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+
+class UserDetail(generics.RetrieveAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly)
 
 
-class SnippetList(generics.ListCreateAPIView):
-    queryset = Snippet.objects.all()
-    serializer_class = SnippetSerializer
 
 
-class SnippetDetail(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Snippet.objects.all()
-    serializer_class = SnippetSerializer
 
+
+
+# def save(self, *args, **kwargs):
+#     """
+#     use the pygments library to create a highlighted HTML
+#     representation of the code snippet.
+#     :param self:
+#     :param args:
+#     :param kwargs:
+#     :return:
+#     """
+#     lexer = get_lexer_by_name(self.language)
+#     linenos = 'table' if self.linenos else False
+#     options = {'title': self.title} if self.title else {}
+#     formatter = HtmlFormatter(style=self.style, linenos=linenos, full=True, **options)
+#     self.highlighted = highlight(self.code, lexer, formatter)
+#     super(Snippet, self).save(*args, **kwargs)
+#
+#
+# class SnippetList(generics.ListCreateAPIView):
+#     queryset = Snippet.objects.all()
+#     serializer_class = SnippetSerializer
+#
+#
+# class SnippetDetail(generics.RetrieveUpdateDestroyAPIView):
+#     queryset = Snippet.objects.all()
+#     serializer_class = SnippetSerializer
+#
 
 
 
