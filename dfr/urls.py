@@ -55,6 +55,16 @@ urlpatterns = [
 ]
 
 
+
+from rest_framework.schemas import get_schema_view
+
+
+schemac_view = get_schema_view(title='Pastebin API')
+
+urlpatterns = [
+    path('schema/', schemac_view),
+]
+
 # urlpatterns = format_suffix_patterns([
 #
 #     path('', views.api_root),
